@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+"
+  codebase="http://www.etomica.org/app/modules/sites"
+  href="PolymerRheology/rheology.jnlp">
+  <information>
+    <title>Polymer Rheology</title>
+    <vendor>Etomica</vendor>
+    <homepage href="home.html"/>
+    <shortcut>
+      <desktop/>
+    </shortcut>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.5+" />
+    <jar href="PolymerRheology/etomica100504.jar" />
+    <jar href="lib/ptolemy.jar" />
+    <jar href="lib/g3d.jar" />
+    <jar href="lib/g3dsys.jar" />
+    <jar href="lib/vecmath1.2-1.14.jar" />
+  </resources>
+  <application-desc main-class="etomica.modules.rheology.RheologyGraphic"/>
+</jnlp>

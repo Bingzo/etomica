@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+"
+  codebase="http://www.etomica.org/app/modules/sites"
+  href="Polymerization/freeradical.jnlp">
+  <information>
+    <title>Polymerization</title>
+    <vendor>Etomica</vendor>
+    <homepage href="home.html"/>
+    <shortcut>
+      <desktop/>
+    </shortcut>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.5+" />
+    <jar href="lib/etomica_modules.jar" />
+    <jar href="lib/etomica_core.jar" />
+    <jar href="lib/vecmath1.2-1.14.jar" />
+    <jar href="lib/ptolemy.jar" />
+    <jar href="lib/Jama.jar" />
+  </resources>
+  <application-desc main-class="etomica.modules.chainequilibrium.FreeRadicalPolymerizationGraphic"/>
+</jnlp>

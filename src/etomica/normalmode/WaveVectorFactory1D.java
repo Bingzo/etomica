@@ -1,0 +1,87 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+package etomica.normalmode;
+
+import java.io.Serializable;
+
+import etomica.api.IBox;
+import etomica.api.IVectorMutable;
+import etomica.box.Box;
+import etomica.simulation.Simulation;
+import etomica.space.Space;
+import etomica.space1d.Space1D;
+import etomica.space1d.Vector1D;
+import etomica.api.ISpecies;
+import etomica.species.SpeciesSpheresMono;
+
+/**
+ * Wave vector factory that returns wave vectors for a 1D system.  
+ * These wave vectors are given by 2 Pi m / (N a) = 2 Pi m / L = 2 Pi m rho / N,
+ * for m = 1, 2, 3,...,N/2.  If N is odd there will be (N-1)/2 vectors, each with 
+ * a coefficient of 1.0 (because none are on the Brillouin-zone boundary) while if 
+ * N is even there will be N/2, with the last one having a coefficient of 0.5. Wave
+ * vectors corresponding to m <= 0 are not included, although they are technically are among the full
+ * set of wave vectors for the system.
+ *
+ * @author Andrew Schultz and David Kofke
+ */
+public class WaveVectorFactory1D implements WaveVectorFactory, Serializable {
+
+    public void makeWaveVectors(IBox box) {
+
+        int nA = box.getMoleculeList().getMoleculeCount();
+        double L = box.getBoundary().getBoxSize().getX(0);
+        
+        int mMax = nA/2;
+
+        waveVectors = new Vector1D[mMax+1];
+        coefficients = new double[mMax+1];
+        
+        for(int m = 0; m<=mMax; m++) {
+            waveVectors[m] = new Vector1D(2. * Math.PI * m / L);
+            coefficients[m] = 1.0;
+        }
+        coefficients[0] = 0.5;
+        
+        if(nA % 2 == 0) {
+            coefficients[mMax] = 0.5;
+        }
+
+    }
+    
+    public IVectorMutable[] getWaveVectors() {
+        return waveVectors;
+    }
+    
+    public double[] getCoefficients() {
+        return coefficients;
+    }
+    
+    public static void main(String[] args) {
+        int nCells = 6;
+        Space sp = Space1D.getInstance();
+        Simulation sim = new Simulation(sp);
+        IBox box = new Box(sim.getSpace());
+        sim.addBox(box);
+        box.getBoundary().setBoxSize(new Vector1D(nCells));
+        ISpecies species = new SpeciesSpheresMono(sim, sp);
+        sim.addSpecies(species);
+        box.setNMolecules(species, nCells);
+        
+        WaveVectorFactory1D foo = new WaveVectorFactory1D();
+        foo.makeWaveVectors(box);
+        IVectorMutable[] waveVectors = foo.getWaveVectors();
+        double[] coefficients = foo.getCoefficients();
+        System.out.println("number of wave vectors "+waveVectors.length);
+        for (int i=0; i<waveVectors.length; i++) {
+            System.out.println(coefficients[i]+" "+waveVectors[i]);
+        }
+    }
+
+    private static final long serialVersionUID = 1L;
+
+    protected IVectorMutable[] waveVectors;
+    protected double[] coefficients;
+}

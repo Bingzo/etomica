@@ -1,0 +1,120 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+package etomica.zeolite;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+import etomica.api.IBox;
+import etomica.api.IVectorMutable;
+import etomica.api.IAtom;
+import etomica.atom.iterator.AtomIteratorLeafAtoms;
+import etomica.config.Configuration;
+import etomica.space.ISpace;
+import etomica.space.Space;
+
+public class ConfigurationFileXYZ implements Configuration, java.io.Serializable {
+
+		public ConfigurationFileXYZ(String aConfName, ISpace _space){
+			super();
+			this.space = _space;
+			confName = aConfName;
+		}
+		
+		public void initializeCoordinates(IBox box) {
+            min = space.makeVector();
+            max = space.makeVector();
+            dim = space.makeVector();
+	        String fileName = confName+".xyz";
+	        FileReader fileReader;
+	        try {
+	            fileReader = new FileReader(fileName);
+	        }catch(IOException e) {
+	            throw new RuntimeException("Cannot open "+fileName+", caught IOException: " + e.getMessage());
+	        }
+            AtomIteratorLeafAtoms atomIterator = new AtomIteratorLeafAtoms(box);
+	        try {
+	            BufferedReader bufReader = new BufferedReader(fileReader);
+	            atomIterator.reset();
+	            //Skips the first line, which contains numAtoms
+	            bufReader.readLine();
+	            for (IAtom atom = atomIterator.nextAtom();
+                     atom != null; atom = atomIterator.nextAtom()) {
+	                setPosition(atom,bufReader.readLine());
+	            }
+	            fileReader.close();
+	        } catch(IOException e) {
+	            throw new RuntimeException("Problem writing to "+fileName+", caught IOException: " + e.getMessage());
+	        }
+	        atomIterator.reset();
+	        
+            for (IAtom atom = atomIterator.nextAtom();
+                 atom != null; atom = atomIterator.nextAtom()) {
+	        	translatePosition(atom);
+	        }
+	        
+		}
+		
+		private void setPosition(IAtom atom, String string) {
+	        String[] coordStr = string.split(" +");
+            IVectorMutable pos = atom.getPosition();
+            for (int i=0; i<pos.getD(); i++) {
+	            double coord = Double.valueOf(coordStr[i]).doubleValue();
+	            if(coord<min.getX(i)) min.setX(i,coord);
+	            if(coord>max.getX(i)) max.setX(i,coord);
+                pos.setX(i, coord);
+	        }
+            dim.E(max);
+            dim.ME(min);
+	    }
+
+        private void translatePosition(IAtom atom){
+            atom.getPosition().ME(min);
+            atom.getPosition().PEa1Tv1(-0.5,dim);
+		}
+        
+		public int[] getNumAtoms(){
+			String fileName = confName+".xyz";
+	        FileReader fileReader;
+	        try {
+	            fileReader = new FileReader(fileName);
+	        }catch(IOException e) {
+	            throw new RuntimeException("Cannot open "+fileName+", caught IOException: " + e.getMessage());
+	        }
+	        BufferedReader bufReader = new BufferedReader(fileReader);
+	        String numLine;
+	        try{
+	        	numLine = bufReader.readLine();
+	        }
+	        catch(IOException e) {
+	            throw new RuntimeException("Problem writing to "+fileName+", caught IOException: " + e.getMessage());
+	        }
+	        String[] coordStr = numLine.split(" +");
+	        double[] coord = new double[coordStr.length];
+	        nAtomsList = new int[coordStr.length];
+	        for (int i=0; i<coord.length; i++) {
+	            nAtomsList[i] = Integer.parseInt(coordStr[i]);
+	        }
+	        return nAtomsList;
+		}
+		
+		public IVectorMutable getUpdatedDimensions(){
+			updatedDimensions = Space.makeVector(dim.getD());
+			
+			updatedDimensions.TE(1.01);
+			return updatedDimensions;
+		}
+		
+        private static final long serialVersionUID = 2L;
+		private IVectorMutable updatedDimensions;
+		private IVectorMutable min;
+		private IVectorMutable max;
+		private IVectorMutable dim;
+		private int[] nAtomsList;
+		private String confName;
+		private final ISpace space;
+
+}
