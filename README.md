@@ -7,7 +7,7 @@ project of IntelliJ IDEA on OpenJDK8.u74-1, Linux.
 4. This is a IntelliJ IDEA project
 
 Contributors:
-http://www.etomica.org/
+http://www.etomica.org/,
 Bingzo@GitHub
 
 _______
